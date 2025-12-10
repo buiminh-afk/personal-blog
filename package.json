@@ -1,0 +1,28 @@
+{
+  "name": "personal-blog",
+  "version": "1.0.0",
+  "description": "Personal blog built with Node.js and Markdown",
+  "type": "module",
+  "scripts": {
+    "create-post": "node scripts/create-post.js",
+    "dev": "node scripts/dev.js",
+    "build": "node scripts/build.js"
+  },
+  "keywords": [
+    "blog",
+    "markdown",
+    "static-site"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "^11.2.0",
+    "gray-matter": "^4.0.3",
+    "highlight.js": "^11.11.1",
+    "markdown-it": "^14.0.0",
+    "markdown-it-anchor": "^9.0.1"
+  },
+  "devDependencies": {
+    "chokidar": "^3.5.3"
+  }
+}

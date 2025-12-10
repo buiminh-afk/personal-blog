@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{DESCRIPTION}}">
+  <meta name="keywords" content="{{KEYWORDS}}">
+  <title>{{TITLE}}</title>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Terminal Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <div class="header-left">
+        <a href="/" class="site-logo">user@blog</a>
+      </div>
+      
+      <div class="header-right">
+        <nav class="nav-menu">
+          <a href="/" class="nav-item">[ HOME ]</a>
+          <div class="nav-item dropdown">
+            <a href="/sitemap.html" class="dropdown-trigger" style="text-decoration: none; color: inherit;">[ CATEGORIES ]</a>
+            <div class="dropdown-content">
+              <ul>
+                {{CATEGORY_LIST}}
+              </ul>
+            </div>
+          </div>
+          <button class="nav-item icon-btn" id="motion-toggle" aria-pressed="false" title="Toggle motion">Motion: Auto</button>
+          <button class="nav-item icon-btn" id="theme-toggle">[ THEME ]</button>
+          <button class="nav-item icon-btn" id="searchTrigger">[ SEARCH ]</button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Search Modal -->
+  <div id="searchModal" class="search-modal">
+    <div class="search-modal-content">
+      <div class="search-input-wrapper">
+        <span class="prompt">></span>
+        <input type="text" id="searchInput" placeholder="grep search_query..." aria-label="Search">
+        <button id="closeSearch" class="btn">[ X ]</button>
+      </div>
+      <div id="searchResults" class="search-results"></div>
+    </div>
+  </div>
+
+  <div class="container{{POST_CLASS}}">
+    <!-- Main Content -->
+    <main class="main-content">
+      {{BREADCRUMB}}
+      {{CONTENT}}
+    </main>
+
+    <!-- Right TOC Sidebar (only on post pages) -->
+    {{RIGHT_TOC}}
+  </div>
+
+  <!-- Terminal Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <p>root@server:~/blog# shutdown -h now</p>
+      <p>&copy; 2025 Terminal Blog. All systems operational.</p>
+    </div>
+  </footer>
+
+  <!-- Scroll to Top Button -->
+  <button class="scroll-to-top" id="scrollToTop" aria-label="Scroll to top">^</button>
+
+
+
+  <script>
+    // Custom smooth scroll function with easing
+    function smoothScrollTo(targetPosition, duration = 800) {
+      const startPosition = window.pageYOffset;
+      const distance = targetPosition - startPosition;
+      let startTime = null;
+
+      // Easing function (ease-in-out)
+      function easeInOutCubic(t) {
+        return t < 0.5
+          ? 4 * t * t * t
+          : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      }
+
+      function animation(currentTime) {
+        if (startTime === null) startTime = currentTime;
+        const timeElapsed = currentTime - startTime;
+        const progress = Math.min(timeElapsed / duration, 1);
+        const ease = easeInOutCubic(progress);
+        
+        window.scrollTo(0, startPosition + distance * ease);
+        
+        if (timeElapsed < duration) {
+          requestAnimationFrame(animation);
+        }
+      }
+
+      requestAnimationFrame(animation);
+    }
+
+    // Smooth scroll for anchor links
+    document.addEventListener('DOMContentLoaded', () => {
+      // Handle all anchor links with smooth scrolling
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          const href = this.getAttribute('href');
+          
+          // Skip if it's just "#" (empty anchor)
+          if (href === '#') return;
+          
+          e.preventDefault();
+          const target = document.querySelector(href);
+          
+          if (target) {
+            const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - 80;
+            smoothScrollTo(targetPosition, 1000);
+          }
+        });
+      });
+
+      // Typing effect for hero command
+      const commandElement = document.querySelector('.typing-effect');
+      if (commandElement) {
+        const text = commandElement.textContent;
+        commandElement.textContent = '';
+        let i = 0;
+        const typeWriter = () => {
+          if (i < text.length) {
+            commandElement.textContent += text.charAt(i);
+            i++;
+            setTimeout(typeWriter, 100);
+          }
+        };
+        setTimeout(typeWriter, 500);
+      }
+    });
+    
+    /* Lightweight typing effect
+       - typeText(el, txt, opts) returns a Promise
+       - sequence: run typing for command then hero name
+    */
+    /* Motion Preference Helper */
+    (function(){
+      const KEY = 'motion';
+
+      function systemPrefersReduced(){
+        return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      }
+
+      function isReducedMotionEffective(){
+        try {
+          const stored = localStorage.getItem(KEY);
+          if(stored === 'full') return false;
+          if(stored === 'reduced') return true;
+        } catch(e){ }
+        return systemPrefersReduced();
+      }
+
+      function setMotionPreference(value){
+        try {
+          if(value === null) localStorage.removeItem(KEY);
+          else localStorage.setItem(KEY, value);
+        } catch(e){ }
+        updateButton();
+      }
+
+      function updateButton(){
+        const btn = document.getElementById('motion-toggle');
+        if(!btn) return;
+        const stored = localStorage.getItem(KEY);
+        if(stored === 'full'){
+          btn.textContent = 'Motion: ON';
+          btn.setAttribute('aria-pressed','true');
+        } else if(stored === 'reduced'){
+          btn.textContent = 'Motion: OFF';
+          btn.setAttribute('aria-pressed','false');
+        } else {
+          btn.textContent = systemPrefersReduced() ? 'Motion: AUTO (reduced)' : 'Motion: AUTO (on)';
+          btn.setAttribute('aria-pressed', systemPrefersReduced() ? 'false' : 'true');
+        }
+      }
+
+      function cyclePreference(){
+        const stored = localStorage.getItem(KEY);
+        if(stored === null) setMotionPreference('full');
+        else if(stored === 'full') setMotionPreference('reduced');
+        else setMotionPreference(null);
+        window.dispatchEvent(new CustomEvent('motionPreferenceChanged'));
+      }
+
+      document.addEventListener('DOMContentLoaded', ()=>{
+        const btn = document.getElementById('motion-toggle');
+        if(btn){
+          btn.addEventListener('click', (e)=> {
+            cyclePreference();
+          });
+        }
+        updateButton();
+
+        try {
+          const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+          mq.addEventListener?.('change', updateButton);
+        } catch(e){}
+      });
+
+      window.motionPref = {
+        isReducedMotionEffective,
+        setMotionPreference
+      };
+    })();
+
+    /* Lightweight typing effect - Cross-browser compatible */
+    (function(){
+      // Safe feature detection
+      var hasPromise = typeof Promise !== 'undefined';
+      var hasMatchMedia = window.matchMedia && typeof window.matchMedia === 'function';
+      
+      // Safely check reduced motion preference
+      function checkReducedMotion() {
+        try {
+          if (window.motionPref && window.motionPref.isReducedMotionEffective) {
+            return window.motionPref.isReducedMotionEffective();
+          }
+          if (hasMatchMedia) {
+            return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          }
+        } catch(e) {
+          // Silent fail
+        }
+        return false;
+      }
+      
+      var prefersReduced = checkReducedMotion();
+
+      // Simple sleep function with fallback
+      function sleep(ms) {
+        if (hasPromise) {
+          return new Promise(function(resolve) {
+            setTimeout(resolve, ms);
+          });
+        }
+        // Fallback for very old browsers - return resolved-like object
+        return {
+          then: function(callback) {
+            setTimeout(callback, ms);
+            return this;
+          }
+        };
+      }
+
+      // Type text with error handling
+      function typeText(el, text, options) {
+        if (!el) return hasPromise ? Promise.resolve() : sleep(0);
+        
+        var opts = options || {};
+        var speed = opts.speed || 50;
+        var caret = opts.caret !== false;
+        
+        try {
+          if (prefersReduced) {
+            el.textContent = text;
+            return hasPromise ? Promise.resolve() : sleep(0);
+          }
+          
+          el.textContent = '';
+          var i = 0;
+          
+          function typeChar() {
+            if (i < text.length) {
+              try {
+                el.textContent += text[i];
+                i++;
+                var delay = speed + Math.random() * (speed * 0.4);
+                setTimeout(typeChar, delay);
+              } catch(e) {
+                // If error, show full text
+                el.textContent = text;
+              }
+            } else if (caret) {
+              try {
+                var c = document.createElement('span');
+                c.className = 'cursor';
+                el.appendChild(c);
+              } catch(e) {
+                // Silent fail on cursor
+              }
+            }
+          }
+          
+          typeChar();
+        } catch(e) {
+          // Fallback: just show the text
+          el.textContent = text;
+        }
+        
+        return hasPromise ? Promise.resolve() : sleep(0);
+      }
+
+      // Main animation sequence
+      function runAnimation() {
+        try {
+          var cmdEl = document.querySelector('.command.typing-effect');
+          var nameSpan = document.querySelector('.hero-title .name');
+          var wholeTitle = document.querySelector('.hero-title');
+
+          // Ensure name placeholder exists
+          if (!nameSpan && wholeTitle) {
+            try {
+              var t = wholeTitle.textContent.trim();
+              var parts = t.split(/\s+/);
+              var name = parts.slice(-1).join(' ');
+              wholeTitle.innerHTML = t.replace(name, '<span class="name"></span>');
+              nameSpan = document.querySelector('.hero-title .name');
+            } catch(e) {
+              // If fails, just continue without name animation
+            }
+          }
+
+          // Type command
+          if (cmdEl) {
+            typeText(cmdEl, './welcome.sh', {speed: 55, caret: false});
+          }
+
+          // Typing hero name (infinite loop)
+          if (nameSpan && !prefersReduced) {
+            var phrases = ["YOUR_NAME", "a Developer", "a Tech Enthusiast", "a Problem Solver"];
+            var phraseIndex = 0;
+
+            function typeCycle() {
+              try {
+                var currentPhrase = phrases[phraseIndex];
+                var span = nameSpan; // Capture in closure
+                
+                // Type the phrase
+                if (span) {
+                  span.textContent = '';
+                  var charIndex = 0;
+                  
+                  function typeNext() {
+                    if (charIndex < currentPhrase.length) {
+                      try {
+                        span.textContent += currentPhrase[charIndex];
+                        charIndex++;
+                        setTimeout(typeNext, 100);
+                      } catch(e) {
+                        span.textContent = currentPhrase;
+                      }
+                    } else {
+                      // Add cursor
+                      try {
+                        var c = document.createElement('span');
+                        c.className = 'cursor';
+                        span.appendChild(c);
+                      } catch(e) {}
+                      
+                      // Wait then delete
+                      setTimeout(function() {
+                        deleteCycle();
+                      }, 2000);
+                    }
+                  }
+                  
+                  function deleteCycle() {
+                    // Re-check motion preference
+                    var nowReduced = checkReducedMotion();
+                    if (nowReduced) {
+                      span.textContent = '';
+                      nextPhrase();
+                      return;
+                    }
+                    
+                    var text = span.textContent;
+                    var deleteIndex = text.length;
+                    
+                    function deleteNext() {
+                      if (deleteIndex >= 0) {
+                        try {
+                          span.textContent = text.substring(0, deleteIndex);
+                          deleteIndex--;
+                          setTimeout(deleteNext, 50);
+                        } catch(e) {
+                          span.textContent = '';
+                          nextPhrase();
+                        }
+                      } else {
+                        nextPhrase();
+                      }
+                    }
+                    
+                    deleteNext();
+                  }
+                  
+                  function nextPhrase() {
+                    phraseIndex = (phraseIndex + 1) % phrases.length;
+                    setTimeout(typeCycle, 500);
+                  }
+                  
+                  typeNext();
+                }
+              } catch(e) {
+                // If error, try again with next phrase
+                phraseIndex = (phraseIndex + 1) % phrases.length;
+                setTimeout(typeCycle, 2000);
+              }
+            }
+            
+            // Start after initial command
+            setTimeout(typeCycle, cmdEl ? 1000 : 100);
+          } else if (nameSpan && prefersReduced) {
+            // Show first phrase immediately if motion reduced
+            nameSpan.textContent = "YOUR_NAME";
+          }
+        } catch(e) {
+          // Silent fail - static content is already there
+        }
+      }
+
+      // Run when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', runAnimation);
+      } else {
+        runAnimation();
+      }
+    })();
+
+
+    // Search functionality
+    const searchTrigger = document.getElementById('searchTrigger');
+    const searchModal = document.getElementById('searchModal');
+    const closeSearch = document.getElementById('closeSearch');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    let searchIndex = [];
+
+    // Fetch search index
+    fetch('/search.json')
+      .then(response => response.json())
+      .then(data => {
+        searchIndex = data;
+      })
+      .catch(error => console.error('Error loading search index:', error));
+
+    // Open search modal
+    searchTrigger.addEventListener('click', () => {
+      searchModal.classList.add('active');
+      searchInput.focus();
+      document.body.style.overflow = 'hidden'; // Prevent scrolling
+    });
+
+    // Close search modal
+    function closeSearchModal() {
+      searchModal.classList.remove('active');
+      searchInput.value = '';
+      searchResults.innerHTML = '';
+      document.body.style.overflow = '';
+    }
+
+    closeSearch.addEventListener('click', closeSearchModal);
+
+    // Close on click outside
+    searchModal.addEventListener('click', (e) => {
+      if (e.target === searchModal) {
+        closeSearchModal();
+      }
+    });
+
+    // Close on Esc key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && searchModal.classList.contains('active')) {
+        closeSearchModal();
+      }
+    });
+
+    // Search event listener
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      
+      if (query.length < 2) {
+        searchResults.innerHTML = '';
+        return;
+      }
+
+      const results = searchIndex.filter(post => {
+        return post.title.toLowerCase().includes(query) || 
+               post.description.toLowerCase().includes(query) ||
+               post.tags.some(tag => tag.toLowerCase().includes(query));
+      }).slice(0, 5); // Limit to 5 results
+
+      if (results.length > 0) {
+        searchResults.innerHTML = results.map(post => `
+          <div class="post-card">
+            <h3><a href="/posts/${post.slug}.html">> ${post.title}</a></h3>
+            <div class="post-meta">${post.date.split('T')[0]}</div>
+          </div>
+        `).join('');
+      } else {
+        searchResults.innerHTML = '<div class="no-results">> No results found</div>';
+      }
+    });
+    
+    // Scroll to top functionality
+    const scrollBtn = document.getElementById('scrollToTop');
+    
+    window.addEventListener('scroll', () => {
+      if (window.pageYOffset > 300) {
+        scrollBtn.classList.add('visible');
+      } else {
+        scrollBtn.classList.remove('visible');
+      }
+    });
+    
+    scrollBtn.addEventListener('click', () => {
+      smoothScrollTo(0, 800); // Use custom smooth scroll
+    });
+
+    // TOC active section highlighting
+    const observerOptions = {
+      rootMargin: '-20% 0px -35% 0px',
+      threshold: 0
+    };
+
+    const headings = document.querySelectorAll('.post-content h2, .post-content h3');
+    const tocLinks = document.querySelectorAll('.toc a');
+    
+    if (headings.length > 0 && tocLinks.length > 0) {
+      let activeHeading = null;
+      
+      const observer = new IntersectionObserver((entries) => {
+        // Find all currently intersecting headings
+        const intersectingHeadings = [];
+        
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            intersectingHeadings.push(entry.target);
+          }
+        });
+        
+        // If we have intersecting headings, use the first one (topmost)
+        if (intersectingHeadings.length > 0) {
+          // Sort by position in document
+          intersectingHeadings.sort((a, b) => {
+            return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+          });
+          
+          activeHeading = intersectingHeadings[0];
+        }
+        
+        // Update TOC highlighting
+        if (activeHeading) {
+          const id = activeHeading.getAttribute('id');
+          tocLinks.forEach(link => {
+            const li = link.parentElement;
+            if (link.getAttribute('href') === `#${id}`) {
+              li.classList.add('active');
+            } else {
+              li.classList.remove('active');
+            }
+          });
+        }
+      }, observerOptions);
+
+      headings.forEach(heading => observer.observe(heading));
+    }
+
+    // Copy code functionality (Click to Copy)
+    document.addEventListener('click', (event) => {
+      const block = event.target.closest('.code-block');
+      if (!block) return;
+
+      const codeEl = block.querySelector('pre code');
+      if (!codeEl) return;
+
+      const text = codeEl.innerText;
+      navigator.clipboard.writeText(text).catch(console.error);
+
+      // Visual feedback
+      block.classList.add('copied');
+      setTimeout(() => block.classList.remove('copied'), 1200);
+    });
+    // Theme Toggle
+    const themeBtn = document.getElementById('theme-toggle');
+    const setTheme = name => {
+      document.documentElement.setAttribute('data-theme', name);
+      localStorage.setItem('theme', name);
+    };
+    
+    // Init theme
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    if(themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        setTheme(currentTheme);
+      });
+    }
+  </script>
+
+</body>
+</html>
