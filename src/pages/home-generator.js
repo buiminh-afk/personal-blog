@@ -14,7 +14,7 @@ function loadTemplate() {
  */
 function generateCategoryList(categories) {
   return categories.map(cat => {
-    return `<li><a href="/category/${cat.slug}.html">[ ${cat.name} (${cat.count}) ]</a></li>`;
+    return `<li><a href="./category/${cat.slug}.html">[ ${cat.name} (${cat.count}) ]</a></li>`;
   }).join('\n            ');
 }
 
@@ -39,13 +39,13 @@ export function generateHome(posts, categories, outputDir) {
 
     return `
       <article class="post-card">
-        <h3><a href="/posts/${post.slug}.html">> ${post.metadata.title}</a></h3>
+        <h3><a href="./posts/${post.slug}.html">> ${post.metadata.title}</a></h3>
         <div class="post-meta">
           <span class="timestamp">[${formattedDate}]</span>
           <span class="category-badge">DIR: /${post.metadata.category}</span>
         </div>
         <p class="post-excerpt">${post.metadata.description}</p>
-        <a href="/posts/${post.slug}.html" class="read-more">EXECUTE_READ</a>
+        <a href="./posts/${post.slug}.html" class="read-more">EXECUTE_READ</a>
       </article>
     `;
   }).join('\n');
@@ -199,7 +199,7 @@ export function generateHome(posts, categories, outputDir) {
         </div>
         
         <div class="view-all">
-          <a href="/sitemap.html" class="btn">[ VIEW_ALL_POSTS ]</a>
+          <a href="./sitemap.html" class="btn">[ VIEW_ALL_POSTS ]</a>
         </div>
       </section>
     </div>
@@ -207,6 +207,7 @@ export function generateHome(posts, categories, outputDir) {
 
   // Replace placeholders
   const html = template
+    .replaceAll('{{BASE_PATH}}', './')
     .replace('{{TITLE}}', 'user@blog: ~')
     .replace('{{DESCRIPTION}}', 'Personal Terminal Blog')
     .replace('{{KEYWORDS}}', 'blog, terminal, developer')

@@ -15,7 +15,7 @@ function loadTemplate() {
 function generateCategoryList(categories, currentCategory = null) {
   return categories.map(cat => {
     const active = cat.slug === currentCategory ? ' class="active"' : '';
-    return `<li${active}><a href="/category/${cat.slug}.html">${cat.name} (${cat.count})</a></li>`;
+    return `<li${active}><a href="../category/${cat.slug}.html">${cat.name} (${cat.count})</a></li>`;
   }).join('\n            ');
 }
 
@@ -29,7 +29,7 @@ export function generateCategory(categorySlug, posts, categories, outputDir) {
 
   const breadcrumb = `
     <nav class="breadcrumb">
-      <a href="/">Trang chủ</a>
+      <a href="../">Trang chủ</a>
       <span class="separator">›</span>
       <span>${category.name}</span>
     </nav>
@@ -46,12 +46,12 @@ export function generateCategory(categorySlug, posts, categories, outputDir) {
 
     return `
       <article class="post-preview">
-        <h2><a href="/posts/${post.slug}.html">${post.metadata.title}</a></h2>
+        <h2><a href="../posts/${post.slug}.html">${post.metadata.title}</a></h2>
         <div class="post-meta">
           <time datetime="${post.metadata.date}">${formattedDate}</time>
         </div>
         <p class="post-excerpt">${post.metadata.description}</p>
-        <a href="/posts/${post.slug}.html" class="read-more">Đọc tiếp →</a>
+        <a href="../posts/${post.slug}.html" class="read-more">Đọc tiếp →</a>
       </article>
     `;
   }).join('\n');
@@ -68,6 +68,7 @@ export function generateCategory(categorySlug, posts, categories, outputDir) {
 
   // Replace placeholders
   const html = template
+    .replaceAll('{{BASE_PATH}}', '../')
     .replace('{{TITLE}}', `${category.name} - Blog Cá Nhân`)
     .replace('{{DESCRIPTION}}', `Danh sách bài viết trong chuyên mục ${category.name}`)
     .replace('{{KEYWORDS}}', category.name)

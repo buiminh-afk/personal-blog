@@ -23,9 +23,9 @@ function generateBreadcrumb(category, title) {
 
   return `
     <nav class="breadcrumb">
-      <a href="/">Trang chủ</a>
+      <a href="../">Trang chủ</a>
       <span class="separator">›</span>
-      <a href="/category/${category}.html">${categoryNames[category] || category}</a>
+      <a href="../category/${category}.html">${categoryNames[category] || category}</a>
       <span class="separator">›</span>
       <span>${title}</span>
     </nav>
@@ -38,7 +38,7 @@ function generateBreadcrumb(category, title) {
 function generateCategoryList(categories, currentCategory = null) {
   return categories.map(cat => {
     const active = cat.slug === currentCategory ? ' class="active"' : '';
-    return `<li${active}><a href="/category/${cat.slug}.html">${cat.name} (${cat.count})</a></li>`;
+    return `<li${active}><a href="../category/${cat.slug}.html">${cat.name} (${cat.count})</a></li>`;
   }).join('\n            ');
 }
 
@@ -74,7 +74,7 @@ export function generatePost(post, categories, outputDir, allPosts) {
       postNavigation += `
         <div class="post-nav-item prev">
           <span class="post-nav-label">Bài trước</span>
-          <a href="/posts/${prevPost.slug}.html" class="post-nav-link">${prevPost.metadata.title}</a>
+          <a href="./${prevPost.slug}.html" class="post-nav-link">${prevPost.metadata.title}</a>
         </div>
       `;
     } else {
@@ -85,7 +85,7 @@ export function generatePost(post, categories, outputDir, allPosts) {
       postNavigation += `
         <div class="post-nav-item next">
           <span class="post-nav-label">Bài tiếp theo</span>
-          <a href="/posts/${nextPost.slug}.html" class="post-nav-link">${nextPost.metadata.title}</a>
+          <a href="./${nextPost.slug}.html" class="post-nav-link">${nextPost.metadata.title}</a>
         </div>
       `;
     } else {
@@ -133,6 +133,7 @@ export function generatePost(post, categories, outputDir, allPosts) {
 
   // Replace placeholders
   const html = template
+    .replaceAll('{{BASE_PATH}}', '../')
     .replace('{{TITLE}}', `${post.metadata.title} - Blog Cá Nhân`)
     .replace('{{DESCRIPTION}}', post.metadata.description)
     .replace('{{KEYWORDS}}', post.metadata.tags.join(', '))

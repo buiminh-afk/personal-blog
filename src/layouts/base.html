@@ -6,7 +6,7 @@
   <meta name="description" content="{{DESCRIPTION}}">
   <meta name="keywords" content="{{KEYWORDS}}">
   <title>{{TITLE}}</title>
-  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="{{BASE_PATH}}styles/main.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
 </head>
@@ -15,14 +15,14 @@
   <header class="site-header">
     <div class="header-container">
       <div class="header-left">
-        <a href="/" class="site-logo">user@blog</a>
+        <a href="{{BASE_PATH}}" class="site-logo">user@blog</a>
       </div>
       
       <div class="header-right">
         <nav class="nav-menu">
-          <a href="/" class="nav-item">[ HOME ]</a>
+          <a href="{{BASE_PATH}}" class="nav-item">[ HOME ]</a>
           <div class="nav-item dropdown">
-            <a href="/sitemap.html" class="dropdown-trigger" style="text-decoration: none; color: inherit;">[ CATEGORIES ]</a>
+            <a href="{{BASE_PATH}}sitemap.html" class="dropdown-trigger" style="text-decoration: none; color: inherit;">[ CATEGORIES ]</a>
             <div class="dropdown-content">
               <ul>
                 {{CATEGORY_LIST}}
@@ -30,7 +30,6 @@
             </div>
           </div>
           <button class="nav-item icon-btn" id="motion-toggle" aria-pressed="false" title="Toggle motion">Motion: Auto</button>
-          <button class="nav-item icon-btn" id="theme-toggle">[ THEME ]</button>
           <button class="nav-item icon-btn" id="searchTrigger">[ SEARCH ]</button>
         </nav>
       </div>
@@ -74,6 +73,9 @@
 
 
   <script>
+    // Set default dark theme
+    document.documentElement.setAttribute('data-theme', 'dark');
+
     // Custom smooth scroll function with easing
     function smoothScrollTo(targetPosition, duration = 800) {
       const startPosition = window.pageYOffset;
@@ -144,6 +146,7 @@
        - typeText(el, txt, opts) returns a Promise
        - sequence: run typing for command then hero name
     */
+
     /* Motion Preference Helper */
     (function(){
       const KEY = 'motion';
@@ -196,7 +199,7 @@
       document.addEventListener('DOMContentLoaded', ()=>{
         const btn = document.getElementById('motion-toggle');
         if(btn){
-          btn.addEventListener('click', (e)=> {
+          btn.addEventListener('click', (e) => {
             cyclePreference();
           });
         }
@@ -438,7 +441,7 @@
     let searchIndex = [];
 
     // Fetch search index
-    fetch('/search.json')
+    fetch('{{BASE_PATH}}search.json')
       .then(response => response.json())
       .then(data => {
         searchIndex = data;
@@ -494,7 +497,7 @@
       if (results.length > 0) {
         searchResults.innerHTML = results.map(post => `
           <div class="post-card">
-            <h3><a href="/posts/${post.slug}.html">> ${post.title}</a></h3>
+            <h3><a href="{{BASE_PATH}}posts/${post.slug}.html">> ${post.title}</a></h3>
             <div class="post-meta">${post.date.split('T')[0]}</div>
           </div>
         `).join('');
@@ -582,23 +585,7 @@
       block.classList.add('copied');
       setTimeout(() => block.classList.remove('copied'), 1200);
     });
-    // Theme Toggle
-    const themeBtn = document.getElementById('theme-toggle');
-    const setTheme = name => {
-      document.documentElement.setAttribute('data-theme', name);
-      localStorage.setItem('theme', name);
-    };
-    
-    // Init theme
-    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    if(themeBtn) {
-      themeBtn.addEventListener('click', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        setTheme(currentTheme);
-      });
-    }
+
   </script>
 
 </body>

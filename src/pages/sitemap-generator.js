@@ -14,7 +14,7 @@ function loadTemplate() {
  */
 function generateCategoryList(categories) {
   return categories.map(cat => {
-    return `<li><a href="/category/${cat.slug}.html">${cat.name} (${cat.count})</a></li>`;
+    return `<li><a href="./category/${cat.slug}.html">${cat.name} (${cat.count})</a></li>`;
   }).join('\n            ');
 }
 
@@ -27,7 +27,7 @@ export function generateSitemap(categoriesData, categories, outputDir) {
 
   const breadcrumb = `
     <nav class="breadcrumb">
-      <a href="/">Trang chủ</a>
+      <a href="./">Trang chủ</a>
       <span class="separator">›</span>
       <span>Mục lục tổng</span>
     </nav>
@@ -55,7 +55,7 @@ export function generateSitemap(categoriesData, categories, outputDir) {
 
       return `
         <li>
-          <a href="/posts/${post.slug}.html">${post.metadata.title}</a>
+          <a href="./posts/${post.slug}.html">${post.metadata.title}</a>
           <time datetime="${post.metadata.date}">${formattedDate}</time>
         </li>
       `;
@@ -64,7 +64,7 @@ export function generateSitemap(categoriesData, categories, outputDir) {
     return `
       <section class="sitemap-category">
         <h2>
-          <a href="/category/${categorySlug}.html">${categoryName}</a>
+          <a href="./category/${categorySlug}.html">${categoryName}</a>
           <span class="count">(${posts.length})</span>
         </h2>
         <ul class="sitemap-posts">
@@ -84,6 +84,7 @@ export function generateSitemap(categoriesData, categories, outputDir) {
 
   // Replace placeholders
   const html = template
+    .replaceAll('{{BASE_PATH}}', './')
     .replace('{{TITLE}}', 'Mục lục tổng - Blog Cá Nhân')
     .replace('{{DESCRIPTION}}', 'Danh sách tất cả bài viết trên blog')
     .replace('{{KEYWORDS}}', 'mục lục, sitemap, blog')
