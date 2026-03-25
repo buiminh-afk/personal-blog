@@ -10,13 +10,15 @@ interface TerminalProps {
   inputValue: string;
   setInputValue: (value: string) => void;
   handleCommand: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  prompt: string;
 }
 
 export const TerminalComponent = ({
   terminalHistory,
   inputValue,
   setInputValue,
-  handleCommand
+  handleCommand,
+  prompt
 }: TerminalProps) => {
   const terminalEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -40,7 +42,7 @@ export const TerminalComponent = ({
         <div ref={terminalEndRef} />
       </div>
       <div className="flex items-center gap-2 border-t border-zinc-900 pt-4">
-        <span className="text-cyan-400 font-bold">joe@portfolio:~$</span>
+        <span className="text-cyan-400 font-bold">{prompt}</span>
         <input
           ref={inputRef}
           type="text"

@@ -13,8 +13,8 @@ const notoMono = Noto_Sans_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Joe | Terminal Portfolio",
-  description: "Network Systems Architect Portfolio",
+  title: "Bui Nguyen Nhat Minh | Network Security Engineer",
+  description: "Network security engineer portfolio focused on endpoint monitoring, network automation, and systems programming.",
 };
 
 export default function RootLayout({
