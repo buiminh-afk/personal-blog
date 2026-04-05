@@ -36,6 +36,7 @@ const postIconMap: Record<string, LucideIcon> = {
     network: Shield,
     cloud: Cloud,
     globe: Globe,
+    pentest: Shield,
 };
 
 const socialIconMap: Record<string, LucideIcon> = {
